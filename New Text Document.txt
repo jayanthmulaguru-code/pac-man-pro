@@ -1,0 +1,84 @@
+import pygame
+import time
+
+# Initialize pygame
+pygame.init()
+
+# Window setup
+WIDTH, HEIGHT = 800, 600
+WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Mini Among Us - Invisible Room Demo")
+
+# Colors
+WHITE = (255, 255, 255)
+BLUE = (0, 100, 255)
+RED = (200, 0, 0)
+GREY = (150, 150, 150)
+BLACK = (0, 0, 0)
+
+# Player setup
+player_size = 40
+player = pygame.Rect(100, 100, player_size, player_size)
+player_speed = 4
+visible = True
+invisible_timer = 0
+
+# Invisible room setup
+invisible_room = pygame.Rect(500, 200, 100, 100)
+
+clock = pygame.time.Clock()
+
+# Game loop
+run = True
+while run:
+    clock.tick(60)
+    WIN.fill(BLACK)
+
+    # Draw invisible room (faint outline)
+    pygame.draw.rect(WIN, GREY, invisible_room, 2)
+
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+    keys = pygame.key.get_pressed()
+
+    # Movement
+    if keys[pygame.K_LEFT]:
+        player.x -= player_speed
+    if keys[pygame.K_RIGHT]:
+        player.x += player_speed
+    if keys[pygame.K_UP]:
+        player.y -= player_speed
+    if keys[pygame.K_DOWN]:
+        player.y += player_speed
+
+    # Collision with invisible room
+    if player.colliderect(invisible_room) and visible:
+        visible = False
+        invisible_timer = time.time()
+        print("🫥 Entered invisible room – hidden for 1 minute!")
+
+    # Restore visibility after 1 minute (60 seconds)
+    if not visible and time.time() - invisible_timer > 60:
+        visible = True
+        print("👀 Became visible again!")
+
+    # Draw player (only if visible)
+    if visible:
+        pygame.draw.rect(WIN, BLUE, player)
+    else:
+        # Optional: draw a faint outline for debug
+        pygame.draw.rect(WIN, RED, player, 1)
+
+    # Display text
+    font = pygame.font.Font(None, 36)
+    status = "VISIBLE" if visible else "INVISIBLE"
+    text = font.render(f"Status: {status}", True, WHITE)
+    WIN.blit(text, (20, 20))
+
+    pygame.display.update()
+
+pygame.quit()
+
